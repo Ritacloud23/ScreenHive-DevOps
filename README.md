@@ -118,7 +118,7 @@ Wait until the EC2 instance is online in Systems Manager Managed nodes before st
 
 ## Run CI/CD
 
-The workflow is .github/workflows/deploy.yml. It runs on pushes to main and can also be started manually from Actions → ScreenHive AWS Deployment → Run workflow (select main).
+Automatic tests run through .github/workflows/ci.yml on pushes to main and pull requests. The AWS deployment is intentionally manual until the AWS account and GitHub variables are configured. Start .github/workflows/deploy.yml from Actions → ScreenHive AWS Deployment → Run workflow (select main).
 
 The workflow checks out this deployment repository and the public application repository, installs dependencies, runs the application's tests, builds the Docker image, pushes an immutable SHA-tagged image to ECR, and deploys through SSM Run Command.
 
