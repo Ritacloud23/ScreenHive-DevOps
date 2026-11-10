@@ -35,8 +35,8 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_REGION}
-        awslogs-group: ${CLOUDWATCH_LOG_GROUP}
+        awslogs-region: us-east-1
+        awslogs-group: /screenhive/dev
         awslogs-stream: redis
         awslogs-create-group: "false"
 
@@ -69,8 +69,8 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_REGION}
-        awslogs-group: ${CLOUDWATCH_LOG_GROUP}
+        awslogs-region: us-east-1
+        awslogs-group: /screenhive/dev
         awslogs-stream: api
         awslogs-create-group: "false"
 
