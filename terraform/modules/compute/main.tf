@@ -39,10 +39,10 @@ resource "aws_instance" "app" {
     cat > /opt/screenhive/deploy.sh <<'SCRIPT'
     #!/bin/bash
     set -euo pipefail
-    IMAGE_URI="${1:?Pass immutable ECR image URI}"
-    REGION="${AWS_REGION:-us-east-1}"
+    IMAGE_URI="$${1:?Pass immutable ECR image URI}"
+    REGION="$${AWS_REGION:-us-east-1}"
     cd /opt/screenhive
-    aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "${IMAGE_URI%%/*}"
+    aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$${IMAGE_URI%%/*}"
     aws ssm get-parameter --name /screenhive/dev/runtime-env --with-decryption --query Parameter.Value --output text --region "$REGION" > .env
     aws ssm get-parameter --name /screenhive/dev/firebase-service-account --with-decryption --query Parameter.Value --output text --region "$REGION" > firebase-service-account.json
     chmod 600 .env firebase-service-account.json
