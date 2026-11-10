@@ -22,12 +22,6 @@ variable "instance_type" {
   default     = "t3.small"
 }
 
-variable "ssh_cidr" {
-  description = "Optional IPv4 CIDR allowed to SSH. Leave empty; deployments use SSM."
-  type        = string
-  default     = ""
-}
-
 variable "github_repository" {
   description = "GitHub repository allowed to assume the deployment role."
   type        = string
