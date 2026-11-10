@@ -59,6 +59,11 @@ jobs:
         working-directory: application
         run: uv sync --frozen
 
+      - name: Prepare isolated test database
+        env:
+          PGPASSWORD: screenhive_password
+        run: createdb -h localhost -U screenhive screenhive_test
+
       - name: Run application tests
         working-directory: application
         env:
