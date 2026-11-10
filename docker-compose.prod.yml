@@ -16,8 +16,8 @@ services:
     logging:
       driver: awslogs
       options:
-        awslogs-region: ${AWS_REGION}
-        awslogs-group: ${CLOUDWATCH_LOG_GROUP}
+        awslogs-region: us-east-1
+        awslogs-group: /screenhive/dev
         awslogs-stream: postgres
         awslogs-create-group: "false"
 
@@ -48,7 +48,10 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379/0
-      FIRESTORE_ENABLED: ${FIRESTORE_ENABLED:-false}
+      FIRESTORE_ENABLED: "true"
+      FIREBASE_CREDENTIALS_PATH: /run/secrets/firebase-service-account.json
+    volumes:
+      - ./firebase-service-account.json:/run/secrets/firebase-service-account.json:ro
     depends_on:
       postgres:
         condition: service_healthy
