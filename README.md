@@ -97,7 +97,7 @@ Terraform state is local in this assessment scaffold and must not be committed. 
 
 After Terraform completes, create these two AWS Systems Manager Parameter Store parameters in us-east-1, both as SecureString:
 
-1. /screenhive/dev/runtime-env — multiline environment values: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET, PAYSTACK_SECRET (if payments are enabled), and FIREBASE_PROJECT_ID.
+1. /screenhive/dev/runtime-env — multiline environment values: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET, PAYSTACK_SECRET (if payments are enabled), and FIREBASE_PROJECT_ID, AWS_REGION, and CLOUDWATCH_LOG_GROUP.
 2. /screenhive/dev/firebase-service-account — the complete Firebase service-account JSON content.
 
 Use unique strong database and JWT secrets. The Firebase JSON must fit the 4 KB Standard Parameter Store SecureString limit. See [docs/firebase-setup.md](docs/firebase-setup.md) for exact instructions. Never commit these values or place them in Terraform variables/state.
