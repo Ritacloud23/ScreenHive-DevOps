@@ -28,6 +28,8 @@ Use a multiline environment-file value similar to this:
     JWT_SECRET=GENERATE_A_DIFFERENT_LONG_RANDOM_SECRET
     PAYSTACK_SECRET=YOUR_PAYSTACK_SECRET_IF_PAYMENTS_ARE_ENABLED
     FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID
+    AWS_REGION=us-east-1
+    CLOUDWATCH_LOG_GROUP=/screenhive/dev
 
 Replace every example value. Do not use the development passwords from the original local Compose file.
 
