@@ -18,6 +18,27 @@ Infrastructure and delivery automation for the [ScreenHive FastAPI application](
 
 See [architecture source](docs/architecture.mmd), [Firebase setup](docs/firebase-setup.md), and [operations notes](docs/operations.md).
 
+## Architecture diagram
+
+```mermaid
+flowchart TD
+    Dev[Developer pushes code] --> GH[GitHub Actions]
+    GH --> Test[Run application tests]
+    Test --> Build[Build Docker image]
+    Build --> ECR[Amazon ECR]
+    GH --> OIDC[GitHub OIDC]
+    OIDC --> IAM[AWS deployment role]
+    IAM --> SSM[AWS Systems Manager]
+    ECR --> EC2[EC2 instance]
+    SSM --> EC2
+    EC2 --> Compose[Docker Compose]
+    Compose --> API[FastAPI container]
+    Compose --> DB[(PostgreSQL container)]
+    Compose --> Redis[(Redis container)]
+    EC2 --> CW[CloudWatch Logs]
+    API --> Health[HTTP health endpoint]
+```
+
 ## Why EC2?
 
 EC2 with Docker Compose is a lower-complexity, cost-conscious starting point than ECS/Fargate plus a load balancer, while meeting the challenge's EC2/ECS/EKS requirement. The assessment environment is deliberately a single instance. It is not highly available.
