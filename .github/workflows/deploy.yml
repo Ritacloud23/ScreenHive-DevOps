@@ -1,8 +1,6 @@
 name: ScreenHive AWS Deployment
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
