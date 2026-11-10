@@ -1,0 +1,16 @@
+flowchart TD
+    Dev[Developer pushes code] --> GH[GitHub Actions]
+    GH --> Test[Run application tests]
+    Test --> Build[Build Docker image]
+    Build --> ECR[Amazon ECR]
+    GH --> OIDC[GitHub OIDC]
+    OIDC --> IAM[AWS deployment role]
+    IAM --> SSM[AWS Systems Manager]
+    ECR --> EC2[EC2 instance]
+    SSM --> EC2
+    EC2 --> Compose[Docker Compose]
+    Compose --> API[FastAPI container]
+    Compose --> DB[(PostgreSQL container)]
+    Compose --> Redis[(Redis container)]
+    EC2 --> CW[CloudWatch Logs and metrics]
+    API --> Health[HTTP health endpoint]
