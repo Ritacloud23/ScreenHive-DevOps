@@ -33,14 +33,21 @@ resource "aws_iam_role_policy" "parameter_read" {
   role = aws_iam_role.ec2.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = ["ssm:GetParameter", "kms:Decrypt"]
-      Resource = [
-        "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/runtime-env",
-        "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/firebase-service-account"
-      ]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["ssm:GetParameter"]
+        Resource = [
+          "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/runtime-env",
+          "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/firebase-service-account"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = ["kms:Decrypt"]
+        Resource = "*"
+      }
+    ]
   })
 }
 
