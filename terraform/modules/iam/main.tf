@@ -35,7 +35,7 @@ resource "aws_iam_role_policy" "parameter_read" {
     Version = "2012-10-17"
     Statement = [{
       Effect = "Allow"
-      Action = ["ssm:GetParameter"]
+      Action = ["ssm:GetParameter", "kms:Decrypt"]
       Resource = [
         "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/runtime-env",
         "arn:${data.aws_partition.current.partition}:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/screenhive/dev/firebase-service-account"
@@ -94,7 +94,7 @@ resource "aws_iam_role_policy" "github_deploy" {
         Effect = "Allow"
         Action = ["ssm:SendCommand"]
         Resource = [
-          "arn:${data.aws_partition.current.partition}:ssm:*::document/AWS-RunShellScript",
+          "arn:${data.aws_partition.current.partition}:ssm:*:*:document/AWS-RunShellScript",
           var.instance_arn_prefix
         ]
       },
