@@ -47,9 +47,7 @@ module "compute" {
   subnet_id          = module.network.public_subnet_id
   security_group_id  = module.network.security_group_id
   instance_profile   = module.iam.ec2_instance_profile_name
-  log_group_name     = aws_cloudwatch_log_group.app.name
   aws_region         = var.aws_region
-  ecr_repository_url = module.registry.repository_url
 }
 
 output "instance_id" {
