@@ -1,0 +1,64 @@
+name: ScreenHive Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: screenhive
+          POSTGRES_PASSWORD: screenhive_password
+          POSTGRES_DB: screenhive
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U screenhive -d screenhive"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout deployment repository
+        uses: actions/checkout@v4
+      - name: Checkout ScreenHive application
+        uses: actions/checkout@v4
+        with:
+          repository: Ritacloud23/Cinema_Booking_API
+          ref: main
+          path: application
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: application/uv.lock
+      - name: Install application dependencies
+        working-directory: application
+        run: uv sync --frozen
+      - name: Prepare isolated test database
+        env:
+          PGPASSWORD: screenhive_password
+        run: createdb -h localhost -U screenhive screenhive_test
+      - name: Run application tests
+        working-directory: application
+        env:
+          DATABASE_URL: postgresql+psycopg://screenhive:screenhive_password@localhost:5432/screenhive
+          JWT_SECRET: ci-test-secret
+          REDIS_URL: redis://localhost:6379/0
+          FIRESTORE_ENABLED: "false"
+        run: uv run pytest
