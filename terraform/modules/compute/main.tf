@@ -31,7 +31,7 @@ resource "aws_instance" "app" {
     #!/bin/bash
     set -euxo pipefail
     dnf update -y
-    dnf install -y docker curl
+    dnf install -y docker curl awscli
     systemctl enable --now docker
     mkdir -p /usr/local/lib/docker/cli-plugins /opt/screenhive
     curl -fsSL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
