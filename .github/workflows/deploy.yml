@@ -1,0 +1,113 @@
+name: ScreenHive AWS Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: screenhive
+          POSTGRES_PASSWORD: screenhive_password
+          POSTGRES_DB: screenhive
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U screenhive -d screenhive"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout deployment repository
+        uses: actions/checkout@v4
+
+      - name: Checkout ScreenHive application
+        uses: actions/checkout@v4
+        with:
+          repository: Ritacloud23/Cinema_Booking_API
+          ref: main
+          path: application
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: application/uv.lock
+
+      - name: Install application dependencies
+        working-directory: application
+        run: uv sync --frozen
+
+      - name: Run application tests
+        working-directory: application
+        env:
+          DATABASE_URL: postgresql+psycopg://screenhive:screenhive_password@localhost:5432/screenhive
+          JWT_SECRET: ci-test-secret
+          REDIS_URL: redis://localhost:6379/0
+          FIRESTORE_ENABLED: "false"
+        run: uv run pytest
+
+      - name: Configure AWS credentials through GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push immutable image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: |
+          docker build -t "$REGISTRY/$REPOSITORY:$IMAGE_TAG" -f application/Dockerfile application
+          docker push "$REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          echo "IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Deploy to EC2 using Systems Manager
+        env:
+          INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ScreenHive $GITHUB_SHA" \
+            --parameters commands="sudo /opt/screenhive/deploy.sh $IMAGE_URI" \
+            --query "Command.CommandId" --output text)
+          echo "SSM command: $COMMAND_ID"
+          for attempt in $(seq 1 36); do
+            STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --query Status --output text 2>/dev/null || true)
+            case "$STATUS" in
+              Success) exit 0 ;;
+              Failed|Cancelled|TimedOut)
+                aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json
+                exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "Timed out waiting for SSM deployment"
+          exit 1
