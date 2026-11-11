@@ -7,7 +7,7 @@
 - Runtime dependencies include PostgreSQL (psycopg), Redis, SQLModel, Alembic, and APScheduler.
 - Existing local Compose uses PostgreSQL 16 and Redis 7.
 - The application reads `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `PAYSTACK_SECRET`, and Firebase/Firestore settings from environment variables.
-- The existing local Compose explicitly sets `FIRESTORE_ENABLED=false`; the application settings default this flag to true. This deployment example defaults it to false, but only keep it disabled if the deployed features do not require Firestore.
+- The existing local Compose explicitly sets `FIRESTORE_ENABLED=false`, but this AWS deployment keeps Firestore enabled because the live showtime board and Server-Sent Events stream depend on it. The production Compose file mounts the Firebase service-account JSON at the configured credentials path.
 - The app starts an APScheduler job during FastAPI lifespan startup. Run a single API replica unless the scheduler is made distributed/leader-elected, otherwise multiple replicas may run duplicate jobs.
 - Alembic migration command: `./.venv/bin/alembic upgrade head`.
 
